@@ -1,0 +1,34 @@
+{
+  "snapshots": [
+    {
+      "id": "SNAP-LATE-EAST-01",
+      "store_id": "ST-EAST-01",
+      "as_of_ts": "2026-11-10T00:00:00Z",
+      "open_time": "09:00",
+      "close_time": "22:00",
+      "weekday_mask": "1111100",
+      "biz_status": "open",
+      "payload": {"reason": "迟到补录：11-10 临时延长闭店"}
+    },
+    {
+      "id": "SNAP-LATE-WEST-01",
+      "store_id": "ST-WEST-01",
+      "as_of_ts": "2026-10-25T00:00:00Z",
+      "open_time": "10:00",
+      "close_time": "20:00",
+      "weekday_mask": "1111100",
+      "biz_status": "open",
+      "payload": {"reason": "迟到补录：早于链首的旧规"}
+    },
+    {
+      "id": "SNAP-NORMAL-NORTH-01",
+      "store_id": "ST-NORTH-01",
+      "as_of_ts": "2026-11-20T00:00:00Z",
+      "open_time": "09:00",
+      "close_time": "19:00",
+      "weekday_mask": "1111100",
+      "biz_status": "open",
+      "payload": {"reason": "正常分流：as_of 新于当前镜"}
+    }
+  ]
+}
