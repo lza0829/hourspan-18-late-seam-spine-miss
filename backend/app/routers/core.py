@@ -202,14 +202,36 @@ def settings():
 def stubs():
     return {"stubs": STUBS}
 
-# --- plant routes ---
+# --- 迟到缝点（衔接边）只读接口：架构甲 = 以缝点记录导航为准 ---
 from app.modules import late_seam_spine as seam_spine
+
 
 @router.get("/late/seam-spine")
 def late_seam_spine(store_id: str | None = None):
+    """缝点记录列表：store_id / late_as_of / 前段 / 本段 / 后段 hist + 对齐判定。"""
     conn = connect()
     try:
         return seam_spine.spines_of(conn, store_id)
+    finally:
+        conn.close()
+
+
+@router.get("/late/seam-attest")
+def late_seam_attest(store_id: str | None = None):
+    """缝点核证（只读）：缝成功必有点；点 as_of/前后 hist 与实链、审计三方对齐。"""
+    conn = connect()
+    try:
+        return seam_spine.attest_seams(conn, store_id)
+    finally:
+        conn.close()
+
+
+@router.get("/late/seam-lookup")
+def late_seam_lookup(store_id: str, as_of: str):
+    """跨缝点查（只读）：落在迟到缝入段时经缝点记录导航，缺记录即点查失败。"""
+    conn = connect()
+    try:
+        return seam_spine.lookup_as_of(conn, store_id, as_of)
     finally:
         conn.close()
 

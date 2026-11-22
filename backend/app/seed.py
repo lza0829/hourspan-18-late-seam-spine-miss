@@ -100,6 +100,20 @@ CREATE TABLE IF NOT EXISTS late_snapshot_audit (
   created_at TEXT NOT NULL
 );
 
+-- 迟到缝点（衔接边）：跨缝 as-of 点查的导航结构（架构甲）。
+-- 与缝链、审计同事务写入；缺一即整笔回滚。
+CREATE TABLE IF NOT EXISTS late_seam_points (
+  id TEXT PRIMARY KEY,
+  store_id TEXT NOT NULL REFERENCES stores(id),
+  late_as_of_ts TEXT NOT NULL,
+  prev_hist_id TEXT REFERENCES dim_store_hours_hist(id),
+  this_hist_id TEXT NOT NULL REFERENCES dim_store_hours_hist(id),
+  next_hist_id TEXT REFERENCES dim_store_hours_hist(id),
+  batch_id TEXT,
+  audit_id TEXT,
+  created_at TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_hist_store_current
   ON dim_store_hours_hist(store_id, is_current);
 CREATE INDEX IF NOT EXISTS idx_snap_store_ts

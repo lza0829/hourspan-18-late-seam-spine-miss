@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../api.js";
+import { api, lateSeamSpine } from "../api.js";
 
 export default function History() {
   const [rows, setRows] = useState([]);
+  const [seams, setSeams] = useState({});
   const [storeId, setStoreId] = useState("");
   const [detectRunId, setDetectRunId] = useState("");
   const [msg, setMsg] = useState("");
@@ -10,7 +11,14 @@ export default function History() {
 
   const reload = () => {
     const q = storeId.trim() ? `?store_id=${encodeURIComponent(storeId.trim())}` : "";
-    return api(`/api/history${q}`).then(setRows).catch((e) => setErr(String(e.message || e)));
+    return Promise.all([api(`/api/history${q}`), lateSeamSpine(storeId.trim())])
+      .then(([r, s]) => {
+        setRows(r);
+        const map = {};
+        (s?.spines || []).forEach((sp) => { map[sp.this_hist_id] = sp; });
+        setSeams(map);
+      })
+      .catch((e) => setErr(String(e.message || e)));
   };
 
   useEffect(() => { reload(); }, []);
@@ -35,7 +43,7 @@ export default function History() {
       <div className="topbar">
         <div>
           <h1>历史维</h1>
-          <p>Type2：关旧行（valid_to + is_current=0）并开新行；与当前镜同源。</p>
+          <p>Type2：关旧行（valid_to + is_current=0）并开新行；与当前镜同源。迟到缝入段带缝点标记。</p>
         </div>
       </div>
       <div className="panel">
@@ -64,7 +72,7 @@ export default function History() {
           <thead>
             <tr>
               <th>历史行</th><th>门店</th><th>开-闭</th><th>mask</th><th>状态</th>
-              <th>valid_from</th><th>valid_to</th><th>当前</th><th>hash</th>
+              <th>valid_from</th><th>valid_to</th><th>当前</th><th>缝点</th><th>hash</th>
             </tr>
           </thead>
           <tbody>
@@ -78,6 +86,11 @@ export default function History() {
                 <td>{r.valid_from}</td>
                 <td>{r.valid_to || "—"}</td>
                 <td>{r.is_current ? "是" : "否"}</td>
+                <td className="mono">
+                  {seams[r.id]
+                    ? `${seams[r.id].seam_id}${seams[r.id].spine_ready ? "" : "（未对齐）"}`
+                    : "—"}
+                </td>
                 <td className="mono">{r.row_hash}</td>
               </tr>
             ))}

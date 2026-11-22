@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../api.js";
+import { api, lateSeamAttest } from "../api.js";
 
 export default function Proofs() {
   const [rows, setRows] = useState([]);
@@ -9,7 +9,7 @@ export default function Proofs() {
 
   const reload = () => {
     api("/api/proofs").then(setRows).catch((e) => setErr(String(e.message || e)));
-    Promise.resolve(api("/api/late/seam-spine")).then(setCompanion).catch(() => setCompanion(null));
+    Promise.resolve(lateSeamAttest()).then(setCompanion).catch(() => setCompanion(null));
   };
 
   useEffect(() => { reload(); }, []);
@@ -43,8 +43,32 @@ export default function Proofs() {
       </div>
       
       <div className="panel">
-        <h2>迟到缝点记录</h2>
-        <pre className="msg">{companion ? JSON.stringify(companion, null, 2) : "（空）"}</pre>
+        <h2>迟到缝点核证</h2>
+        {companion?.results?.length ? (
+          <table>
+            <thead>
+              <tr><th>门店</th><th>审计条</th><th>缝点条</th><th>对齐</th><th>核证</th><th>错误</th></tr>
+            </thead>
+            <tbody>
+              {companion.results.map((r) => (
+                <tr key={r.store_id}>
+                  <td>{r.store_id}</td>
+                  <td>{r.audit_count}</td>
+                  <td>{r.seam_count}</td>
+                  <td>{r.linked}</td>
+                  <td>
+                    <span className={`badge ${r.valid ? "ok" : "bad"}`}>
+                      {r.valid ? "通过" : "失败"}
+                    </span>
+                  </td>
+                  <td className="mono">{r.errors?.length ? r.errors.join(", ") : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="muted">（暂无迟到缝点）</p>
+        )}
       </div>
       <div className="panel">
         <h2>scd_proofs</h2>
